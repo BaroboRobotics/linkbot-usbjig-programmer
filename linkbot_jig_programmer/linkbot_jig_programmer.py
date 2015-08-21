@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 import sys
 from PyQt4 import QtCore, QtGui
@@ -93,9 +93,11 @@ class StartQT4(QtGui.QMainWindow):
         self.ui.robotid_lineEdit.textChanged.connect(self.robotIdChanged)
         self.ui.flash_pushButton.clicked.connect(self.startProgramming)
         self.ui.test_pushButton.clicked.connect(self.runTest)
+        #self.ui.flashtest_pushButton.clicked.connect(self.flashAndTest)
         self.ui.progressBar.setValue(0)
         self.progressTimer = QtCore.QTimer(self)
         self.progressTimer.timeout.connect(self.updateProgress)
+        self.autoTest = False
 
     def robotIdChanged(self, text):
         if len(text) == 4:
@@ -105,11 +107,11 @@ class StartQT4(QtGui.QMainWindow):
 
     def disableTestButtons(self):
         self.ui.test_pushButton.setEnabled(False)
-        self.ui.flashtest_pushButton.setEnabled(False)
+        #self.ui.flashtest_pushButton.setEnabled(False)
 
     def enableTestButtons(self):
         self.ui.test_pushButton.setEnabled(True)
-        self.ui.flashtest_pushButton.setEnabled(True)
+        #self.ui.flashtest_pushButton.setEnabled(True)
 
     def disableButtons(self):
         self.disableTestButtons()
@@ -139,7 +141,7 @@ class StartQT4(QtGui.QMainWindow):
                                              hexfiles=[firmwareFile, bootloader_file],
                                              verify=False
                                            )
-            self.progressTimer.start(500)
+            self.progressTimer.start(1000)
         except Exception as e:
           QtGui.QMessageBox.warning(self, "Programming Exception",
             'Unable to connect to programmer at com port '+ serialPort + 
@@ -152,19 +154,41 @@ class StartQT4(QtGui.QMainWindow):
         testThread = RobotTestThread(self)
         testThread.setTestRobotId(self.ui.robotid_lineEdit.text())
         testThread.threadFinished.connect(self.testFinished)
+        testThread.threadException.connect(self.testException)
         testThread.start()
+
+    def flashAndTest(self):
+        self.autoTest = True
+        self.startProgramming()
 
     def testFinished(self):
         self.enableButtons()
 
+    def testException(self, e):
+        QtGui.QMessageBox.warning(self, "Error", 
+            "Test failed: " + str(e) )
+
     def updateProgress(self):
-        self.ui.progressBar.setValue(self.programmer.getProgress()*100)
+        # Multiply progress by 200 because we will not be doing verification
+        self.ui.progressBar.setValue(self.programmer.getProgress()*200)
         if not self.programmer.isProgramming():
-            self.enableButtons()
             self.progressTimer.stop()
+            linkbot._linkbot.cycleDongle(1)
+            if self.autoTest:
+                self.runTest()
+                '''
+                timer = QtCore.QTimer(self)
+                timer.timeout.connect(self.runTest)
+                timer.setSingleShot(True)
+                timer.start(8000)
+                '''
+            else:
+                self.enableButtons()
+            self.autoTest = False
 
 class RobotTestThread(QtCore.QThread):
     threadFinished = QtCore.pyqtSignal()
+    threadException = QtCore.pyqtSignal(Exception)
 
     def __init__(self, *args, **kwargs):
         QtCore.QThread.__init__(self, *args, **kwargs)
@@ -174,24 +198,30 @@ class RobotTestThread(QtCore.QThread):
 
     def run(self):
         # Power the motors forward and backward
-        l = linkbot.Linkbot()
-        if l.getFormFactor() != 3:
-            l.setMotorPowers(255, 255, 255)
-            time.sleep(2)
-            l.setMotorPowers(-255, -255, -255)
-            time.sleep(2)
-            (x,y,z) = l.getAccelerometerData()
-            if abs(x) < 0.1 and abs(y) < 0.1 and (abs(z)-1) < 0.1:
-                pass
-            else:
-                QtGui.QMessageBox.warning(self, "Accelerometer anomaly detected.")
         try:
+            l = linkbot.Linkbot()
+            if l.getFormFactor() != 3:
+                l.setMotorPowers(255, 255, 255)
+                time.sleep(1)
+                l.setMotorPowers(-255, -255, -255)
+                time.sleep(1)
+                l.setMotorPowers(0,0,0)
+                time.sleep(1)
+                (x,y,z) = l.getAccelerometerData()
+                if abs(x) < 0.1 and abs(y) < 0.1 and (abs(z)-1) < 0.1:
+                    pass
+                else:
+                    self.threadException.emit(
+                        Exception("Accelerometer anomaly detected."))
+
             testbot = linkbot.Linkbot(self.testBotId)
             print(testbot.getJointAngles())
             del testbot
-        except:
-            QtGui.QMessageBox.warning(self, 
-                "Error communicating with remote robot")
+            l.setBuzzerFrequency(220)
+            time.sleep(0.5)
+            l.setBuzzerFrequency(0)
+        except Exception as e:
+            self.threadException.emit(e)
         self.threadFinished.emit()
 
 def main():
