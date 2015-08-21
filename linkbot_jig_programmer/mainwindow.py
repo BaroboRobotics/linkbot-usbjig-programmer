@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Thu Aug 13 15:59:18 2015
+# Created: Fri Aug 21 11:30:47 2015
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -82,9 +82,6 @@ class Ui_MainWindow(object):
         self.test_pushButton = QtGui.QPushButton(self.centralwidget)
         self.test_pushButton.setObjectName(_fromUtf8("test_pushButton"))
         self.horizontalLayout.addWidget(self.test_pushButton)
-        self.flashtest_pushButton = QtGui.QPushButton(self.centralwidget)
-        self.flashtest_pushButton.setObjectName(_fromUtf8("flashtest_pushButton"))
-        self.horizontalLayout.addWidget(self.flashtest_pushButton)
         self.gridLayout_2.addLayout(self.horizontalLayout, 3, 0, 1, 1)
         self.progressBar = QtGui.QProgressBar(self.centralwidget)
         self.progressBar.setProperty("value", 24)
@@ -124,7 +121,6 @@ class Ui_MainWindow(object):
         self.label_3.setText(_translate("MainWindow", "Enter a remote robot\'s Serial ID to ping:", None))
         self.flash_pushButton.setText(_translate("MainWindow", "Flash", None))
         self.test_pushButton.setText(_translate("MainWindow", "Test", None))
-        self.flashtest_pushButton.setText(_translate("MainWindow", "Flash + Test", None))
         self.menuAoeu.setTitle(_translate("MainWindow", "File", None))
         self.menuHelp.setTitle(_translate("MainWindow", "Help", None))
         self.actionQuit.setText(_translate("MainWindow", "Quit", None))
