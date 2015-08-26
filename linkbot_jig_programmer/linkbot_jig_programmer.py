@@ -18,7 +18,6 @@ import serial
 import pystk500v2 as stk
 import random
 import traceback
-import asyncio
 
 from pkg_resources import resource_filename, resource_listdir
 fallback_hex_file = ''
