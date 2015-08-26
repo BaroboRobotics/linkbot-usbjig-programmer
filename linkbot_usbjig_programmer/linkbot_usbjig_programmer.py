@@ -110,7 +110,7 @@ class StartQT4(QtGui.QMainWindow):
     
     def updateProgress(self):
         # Multiply progress by 200 because we will not be doing verification
-        self.ui.progressBar.setValue(self.programmer.getProgress()*200)
+        self.ui.progressBar.setValue(self.programmer.getProgress()*100)
         if not self.programmer.isProgramming():
             if self.programmer.getLastException() is not None:
                 QtGui.QMessageBox.warning(self, "Programming Exception",
