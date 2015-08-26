@@ -1,3 +1,1 @@
-include linkbot_jig_programmer/hexfiles/*.hex
-include linkbot_jig_programmer/hexfiles/*.eeprom
-include linkbot_jig_programmer/bootloader/*.hex
+include linkbot_usbjig_programmer/hexfiles/*.hex
