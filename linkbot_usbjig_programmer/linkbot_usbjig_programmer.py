@@ -56,7 +56,7 @@ class StartQT4(QtGui.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.isRunning = True
-        self.setWindowTitle('Linkbot Jig Main-Board Programmer')
+        self.setWindowTitle('Linkbot Jig USB-Board Programmer')
 
         # Populate the firmware hex files combobox
         for f in sorted(findHexFiles()):
