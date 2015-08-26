@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 
 import sys
 from PyQt4 import QtCore, QtGui
@@ -18,7 +18,6 @@ import serial
 import pystk500v2 as stk
 import random
 import traceback
-import asyncio
 
 from pkg_resources import resource_filename, resource_listdir
 fallback_hex_file = ''
