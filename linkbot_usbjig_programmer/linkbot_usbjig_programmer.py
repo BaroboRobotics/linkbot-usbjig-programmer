@@ -88,6 +88,7 @@ class StartQT4(QtGui.QMainWindow):
     def startProgramming(self): 
         serialPort = self.ui.comport_comboBox.currentText()
         firmwareFile = self.ui.firmwareversion_comboBox.currentText()+'.hex'
+        print('Programming file: ', firmwareFile)
         try:
           self.programmer = stk.ATmega16U4Programmer(serialPort)
         except Exception as e:
@@ -99,7 +100,7 @@ class StartQT4(QtGui.QMainWindow):
         
         try:
             self.programmer.programAllAsync( hexfiles=[firmwareFile])
-            self.progressTimer.start(1000)
+            self.progressTimer.start(500)
         except Exception as e:
           QtGui.QMessageBox.warning(self, "Programming Exception",
             'Unable to connect to programmer at com port '+ serialPort + 
@@ -111,6 +112,12 @@ class StartQT4(QtGui.QMainWindow):
         # Multiply progress by 200 because we will not be doing verification
         self.ui.progressBar.setValue(self.programmer.getProgress()*200)
         if not self.programmer.isProgramming():
+            if self.programmer.getLastException() is not None:
+                QtGui.QMessageBox.warning(self, "Programming Exception",
+                    str(self.programmer.getLastException()))
+            else:
+                self.ui.progressBar.setValue(100)
+
             self.progressTimer.stop()
             self.enableButtons()
 
