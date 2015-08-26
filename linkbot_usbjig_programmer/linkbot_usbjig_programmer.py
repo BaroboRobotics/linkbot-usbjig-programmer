@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 import sys
 from PyQt4 import QtCore, QtGui
@@ -56,7 +56,7 @@ class StartQT4(QtGui.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.isRunning = True
-        self.setWindowTitle('Linkbot Jig Main-Board Programmer')
+        self.setWindowTitle('Linkbot Jig USB-Board Programmer')
 
         # Populate the firmware hex files combobox
         for f in sorted(findHexFiles()):
