@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 
 import sys
 from PyQt4 import QtCore, QtGui
@@ -43,10 +43,11 @@ def findHexFiles():
     fallback_eeprom_file = ''
     firmware_files = resource_listdir(__name__, 'hexfiles')
     firmware_files.sort()
-    firmware_basename = os.path.splitext(
-        resource_filename(__name__, os.path.join('hexfiles', firmware_files[0])))[0]
-    fallback_hex_file = firmware_basename + '.hex'
-    hexfiles = [firmware_basename]
+    hexfiles = []
+    for f in firmware_files:
+        firmware_basename = os.path.splitext(
+            resource_filename(__name__, os.path.join('hexfiles', f)))[0]
+        hexfiles += [firmware_basename]
 
     return hexfiles
 
@@ -90,13 +91,16 @@ class StartQT4(QtGui.QMainWindow):
         firmwareFile = self.ui.firmwareversion_comboBox.currentText()+'.hex'
         print('Programming file: ', firmwareFile)
         try:
-          self.programmer = stk.ATmega16U4Programmer(serialPort)
-        except Exception as e:
-          QtGui.QMessageBox.warning(self, "Programming Exception",
-            'Unable to connect to programmer at com port '+ serialPort + 
-            '. ' + str(e))
-          traceback.print_exc()
-          return
+            self.programmer = stk.ATmega32U4Programmer(serialPort)
+        except:
+            try:
+                self.programmer = stk.ATmega16U4Programmer(serialPort)
+            except Exception as e:
+                QtGui.QMessageBox.warning(self, "Programming Exception",
+                  'Unable to connect to programmer at com port '+ serialPort + 
+                  '. ' + str(e))
+                traceback.print_exc()
+                return
         
         try:
             self.programmer.programAllAsync( hexfiles=[firmwareFile])
