@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 
 import sys
 from PyQt4 import QtCore, QtGui
@@ -8,6 +8,7 @@ try:
     from linkbot_usbjig_programmer.mainwindow import Ui_MainWindow
 except:
     from mainwindow import Ui_MainWindow
+import functools
 import linkbot
 import time
 import glob
@@ -67,9 +68,16 @@ class StartQT4(QtGui.QMainWindow):
             self.ui.comport_comboBox.addItem(p)
 
         self.ui.flash_pushButton.clicked.connect(self.startProgramming)
+        self.ui.checkBox_autoFlash.stateChanged.connect(self.processCheckBox)
         self.ui.progressBar.setValue(0)
         self.progressTimer = QtCore.QTimer(self)
         self.progressTimer.timeout.connect(self.updateProgress)
+        self.progressTimerSilent = QtCore.QTimer(self)
+        self.progressTimerSilent.timeout.connect(
+                functools.partial(
+                    self.updateProgress, silent=True
+                    )
+                )
 
         self.thread = threading.Thread(target=self.cycleDongleThread)
         self.thread.start()
@@ -86,44 +94,67 @@ class StartQT4(QtGui.QMainWindow):
     def enableButtons(self):
         self.ui.flash_pushButton.setEnabled(True)
 
-    def startProgramming(self): 
+    def processCheckBox(self, enabled):
+        if enabled:
+            self.disableButtons()
+            # Start the listening thread
+            self.listenThread = AutoProgramThread(self)
+            self.listenThread.is_alive = True
+            self.listenThread.start()
+        else:
+            self.listenThread.is_alive = False
+            self.listenThread.wait()
+            self.enableButtons()
+
+    def startProgramming(self, silent=False): 
         serialPort = self.ui.comport_comboBox.currentText()
         firmwareFile = self.ui.firmwareversion_comboBox.currentText()+'.hex'
         print('Programming file: ', firmwareFile)
         try:
-            self.programmer = stk.ATmega32U4Programmer(serialPort)
+            self.programmer = stk.ATmegaXXU4Programmer(serialPort)
         except:
-            try:
-                self.programmer = stk.ATmega16U4Programmer(serialPort)
-            except Exception as e:
+            if not silent:
                 QtGui.QMessageBox.warning(self, "Programming Exception",
                   'Unable to connect to programmer at com port '+ serialPort + 
                   '. ' + str(e))
                 traceback.print_exc()
                 return
+            else:
+                raise
         
         try:
-            self.programmer.programAllAsync( hexfiles=[firmwareFile])
-            self.progressTimer.start(500)
-        except Exception as e:
-          QtGui.QMessageBox.warning(self, "Programming Exception",
-            'Unable to connect to programmer at com port '+ serialPort + 
-            '. ' + str(e))
-          traceback.print_exc()
-          return
-    
-    def updateProgress(self):
-        # Multiply progress by 200 because we will not be doing verification
-        self.ui.progressBar.setValue(self.programmer.getProgress()*100)
-        if not self.programmer.isProgramming():
-            if self.programmer.getLastException() is not None:
-                QtGui.QMessageBox.warning(self, "Programming Exception",
-                    str(self.programmer.getLastException()))
+            if not silent:
+                self.programmer.programAllAsync( hexfiles=[firmwareFile])
+                self.progressTimer.start(500)
             else:
-                self.ui.progressBar.setValue(100)
+                self.programmer.programAll( hexfiles=[firmwareFile])
+        except Exception as e:
+            if not silent:
+                QtGui.QMessageBox.warning(self, "Programming Exception",
+                    'Unable to connect to programmer at com port '+ serialPort + 
+                    '. ' + str(e))
+                traceback.print_exc()
+                return
+            else:
+                raise
+    
+    def updateProgress(self, silent=False):
+        # Multiply progress by 200 because we will not be doing verification
+        if silent:
+            try:
+                self.ui.progressBar.setValue(self.programmer.getProgress()*100)
+            except:
+                pass
+        else:
+            if not self.programmer.isProgramming():
+                if self.programmer.getLastException() is not None:
+                    QtGui.QMessageBox.warning(self, "Programming Exception",
+                        str(self.programmer.getLastException()))
+                else:
+                    self.ui.progressBar.setValue(100)
 
-            self.progressTimer.stop()
-            self.enableButtons()
+                self.progressTimer.stop()
+                self.enableButtons()
 
     def cycleDongleThread(self):
         while self.isRunning:
@@ -132,6 +163,46 @@ class StartQT4(QtGui.QMainWindow):
 
     def closeEvent(self, *args, **kwargs):
         self.isRunning = False
+
+class AutoProgramThread(QtCore.QThread):
+    IDLE = 0
+    DONE_PROGRAMMING = 1
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self._main_window = parent
+        self.is_alive= True
+        self.state = self.IDLE
+        self._main_window.progressTimerSilent.start(250)
+
+    def run(self):
+        while self.is_alive:
+            if self.state == self.IDLE:
+                self.idle()
+            elif self.state == self.DONE_PROGRAMMING:
+                self.done_programming()
+
+    def idle(self):
+        try:
+            self._main_window.startProgramming(silent=True)
+            self.state = self.DONE_PROGRAMMING
+            print('Done programming.')
+        except Exception as e:
+            print('Caught exception: ', str(e), 'Trying again...')
+            time.sleep(1)
+
+    def done_programming(self):
+        time.sleep(3)
+        try:
+            print('Trying sign-on...')
+            self._main_window.programmer.sign_on()
+            self._main_window.programmer.check_signature()
+            time.sleep(1)
+            print('Success.')
+        except Exception as e:
+            print('Check sig failed:', e)
+            self.state = self.IDLE
+
 
 def main():
     app = QtGui.QApplication(sys.argv)

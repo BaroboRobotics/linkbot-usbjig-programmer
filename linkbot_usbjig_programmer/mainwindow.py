@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Tue Aug 25 18:03:05 2015
+# Created: Mon Feb 29 14:01:00 2016
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -68,11 +68,14 @@ class Ui_MainWindow(object):
         self.flash_pushButton = QtGui.QPushButton(self.centralwidget)
         self.flash_pushButton.setObjectName(_fromUtf8("flash_pushButton"))
         self.horizontalLayout.addWidget(self.flash_pushButton)
-        self.gridLayout_2.addLayout(self.horizontalLayout, 2, 0, 1, 1)
+        self.gridLayout_2.addLayout(self.horizontalLayout, 3, 0, 1, 1)
         self.progressBar = QtGui.QProgressBar(self.centralwidget)
         self.progressBar.setProperty("value", 24)
         self.progressBar.setObjectName(_fromUtf8("progressBar"))
-        self.gridLayout_2.addWidget(self.progressBar, 3, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.progressBar, 4, 0, 1, 1)
+        self.checkBox_autoFlash = QtGui.QCheckBox(self.centralwidget)
+        self.checkBox_autoFlash.setObjectName(_fromUtf8("checkBox_autoFlash"))
+        self.gridLayout_2.addWidget(self.checkBox_autoFlash, 2, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 480, 25))
@@ -104,6 +107,7 @@ class Ui_MainWindow(object):
         self.groupBox_2.setTitle(_translate("MainWindow", "Firmware Version", None))
         self.label_2.setText(_translate("MainWindow", "Select the firmware version to flash. ", None))
         self.flash_pushButton.setText(_translate("MainWindow", "Flash", None))
+        self.checkBox_autoFlash.setText(_translate("MainWindow", "Enable Auto-Flash", None))
         self.menuAoeu.setTitle(_translate("MainWindow", "File", None))
         self.menuHelp.setTitle(_translate("MainWindow", "Help", None))
         self.actionQuit.setText(_translate("MainWindow", "Quit", None))
