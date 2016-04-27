@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = "0.0.8"
+__version__ = "0.0.9"
 
 import sys
 from PyQt4 import QtCore, QtGui
@@ -142,7 +142,11 @@ class StartQT4(QtGui.QMainWindow):
         # Multiply progress by 200 because we will not be doing verification
         if silent:
             try:
-                self.ui.progressBar.setValue(self.programmer.getProgress()*100)
+                progress = self.programmer.getProgress()*100
+                print(progress)
+                if progress > 100:
+                    progress = 100
+                self.ui.progressBar.setValue(progress)
             except:
                 pass
         else:
