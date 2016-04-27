@@ -16,7 +16,7 @@ setup(
     entry_points = {
         "console_scripts": ['linkbot-usbjig-programmer=linkbot_usbjig_programmer.linkbot_usbjig_programmer:main']
     },
-    install_requires = ["PyLinkbot >= 2.3.4", "pystk500v2 >= 0.2.3", "pyserial"],
+    install_requires = ["PyLinkbot >= 2.3.4", "pystk500v2 >= 2.3.3", "pyserial == 2.7"],
     description = "Tool for flashing Linkbot main-boards with a bootloader on"
         "the main programming jig.",
     zip_safe = False,

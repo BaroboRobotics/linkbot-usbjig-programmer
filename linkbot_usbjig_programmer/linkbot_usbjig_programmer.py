@@ -142,7 +142,11 @@ class StartQT4(QtGui.QMainWindow):
         # Multiply progress by 200 because we will not be doing verification
         if silent:
             try:
-                self.ui.progressBar.setValue(self.programmer.getProgress()*100)
+                progress = self.programmer.getProgress()*100
+                print(progress)
+                if progress > 100:
+                    progress = 100
+                self.ui.progressBar.setValue(progress)
             except:
                 pass
         else:
