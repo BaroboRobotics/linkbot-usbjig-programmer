@@ -9,7 +9,7 @@ try:
 except:
     from mainwindow import Ui_MainWindow
 import functools
-import linkbot
+import linkbot3 as linkbot
 import time
 import glob
 import threading
@@ -161,8 +161,9 @@ class StartQT4(QtGui.QMainWindow):
                 self.enableButtons()
 
     def cycleDongleThread(self):
+        daemon = linkbot.Daemon()
         while self.isRunning:
-            linkbot._linkbot.cycleDongle(2)
+            daemon.cycle(2)
             time.sleep(1)
 
     def closeEvent(self, *args, **kwargs):
