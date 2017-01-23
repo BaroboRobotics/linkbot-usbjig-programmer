@@ -111,7 +111,10 @@ class StartQT4(QtGui.QMainWindow):
         firmwareFile = self.ui.firmwareversion_comboBox.currentText()+'.hex'
         print('Programming file: ', firmwareFile)
         try:
-            self.programmer = stk.ATmegaXXU4Programmer(serialPort)
+            if firmwareFile.find('32u2') > 0:
+                self.programmer = stk.ATmega32U2Programmer(serialPort)
+            else:
+                self.programmer = stk.ATmegaXXU4Programmer(serialPort)
         except:
             if not silent:
                 QtGui.QMessageBox.warning(self, "Programming Exception",
